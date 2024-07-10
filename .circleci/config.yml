@@ -1,31 +1,41 @@
-version: 2
+version: 2.1
+orbs:
+  browser-tools: circleci/browser-tools@1.4.8
 jobs:
   build:
     docker:
-      - image: circleci/php:7.3.0-node-browsers
-      - image: circleci/mysql:8.0.26
+      - image: cimg/php:7.4.14-browsers
+      - image: cimg/mysql:8.0.26
+
     environment:
-      - DB_CONNECTION: circle_testing
+      - DB_CONNECTION: demo_test
+
     working_directory: ~/ci-demo
+
     steps:
+      - browser-tools/install-browser-tools
       - checkout
+
       - run:
-          name: Update apt-get
-          command: sudo apt-get update
-      - run:
-          name: Docker php extensions install
-          command: sudo docker-php-ext-install pdo_mysql
+          name: 'Prepare Environment'
+          command: |
+            sudo apt update
+            sudo apt-get install -y php-zip
+
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "composer.json" }}
             - v1-dependencies-
+
       - run:
-          name: Install PHP libraries
+          name: 'Install Dependencies'
           command: composer install -n --prefer-dist
+
       - save_cache:
           paths:
             - ./vendor
           key: v1-dependencies-{{ checksum "composer.json" }}
+
       - run:
-          name: Run PHPUnit
-          command: vendor/bin/phpunit
+          name: 'Run Tests'
+          command: ./vendor/bin/phpunit
