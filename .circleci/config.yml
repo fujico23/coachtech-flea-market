@@ -4,7 +4,6 @@ orbs:
 jobs:
   build:
     docker:
-      # Specify the version you desire here
       - image: cimg/php:7.4.14-browsers
 
     steps:
@@ -18,9 +17,14 @@ jobs:
             sudo apt-get install -y php-zip
 
       - run:
+          name: 'Navigate to correct directory'
+          command: |
+            cd ~/coachtech-flea-market-app/src/
+
+      - run:
           name: 'Create Environment file'
           command: |
-            mv ~/coachtech-flea-market-app/src/.env.testing ~/coachtech-flea-market-app/src/.env
+            mv .env.testing .env
 
       - run:
           name: 'Install Dependencies'
