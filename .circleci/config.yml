@@ -1,35 +1,31 @@
-version: 2.1
-orbs:
-  browser-tools: circleci/browser-tools@1.4.8
+version: 2
 jobs:
   build:
     docker:
-      - image: cimg/php:7.4.14-browsers
-
+      - image: circleci/php:7.3.0-node-browsers
+      - image: circleci/mysql:8.0.26
+    environment:
+      - DB_CONNECTION: circle_testing
+    working_directory: ~/ci-demo
     steps:
-      - browser-tools/install-browser-tools
       - checkout
-
       - run:
-          name: 'Prepare Environment'
-          command: |
-            sudo apt update
-            sudo apt-get install -y php-zip
-
+          name: Update apt-get
+          command: sudo apt-get update
       - run:
-          name: 'Navigate to correct directory'
-          command: |
-            cd ~/coachtech-flea-market-app/src/
-
+          name: Docker php extensions install
+          command: sudo docker-php-ext-install pdo_mysql
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "composer.json" }}
+            - v1-dependencies-
       - run:
-          name: 'Create Environment file'
-          command: |
-            mv .env.testing .env
-
-      - run:
-          name: 'Install Dependencies'
+          name: Install PHP libraries
           command: composer install -n --prefer-dist
-
+      - save_cache:
+          paths:
+            - ./vendor
+          key: v1-dependencies-{{ checksum "composer.json" }}
       - run:
-          name: 'Run Tests'
-          command: ./vendor/bin/phpunit tests
+          name: Run PHPUnit
+          command: vendor/bin/phpunit
