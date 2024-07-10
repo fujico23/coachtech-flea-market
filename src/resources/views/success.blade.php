@@ -21,6 +21,38 @@
       </div>
     </div>
   </div>
+
+  <script>
+    const mainContainer = document.createElement('div');
+    mainContainer.classList.add('main', 'verification__container');
+
+    const header = document.createElement('h1');
+    header.classList.add('verification__container__header', 'header');
+    header.textContent = 'お支払いが完了しました!';
+    mainContainer.appendChild(header);
+
+    const innerContainer = document.createElement('div');
+    innerContainer.classList.add('verification__container__inner');
+    mainContainer.appendChild(innerContainer);
+
+    const paragraph = document.createElement('p');
+    paragraph.textContent = 'マイページにてご確認下さい';
+    innerContainer.appendChild(paragraph);
+
+    const btnGroup = document.createElement('div');
+    btnGroup.classList.add('verification__container__btn-group');
+    innerContainer.appendChild(btnGroup);
+
+    // Create link button
+    const linkButton = document.createElement('a');
+    linkButton.classList.add('btn--border-pink--small');
+    linkButton.href = '/mypage';
+    linkButton.textContent = 'マイページへ';
+    btnGroup.appendChild(linkButton);
+
+    document.body.appendChild(mainContainer);
+  </script>
 </body>
+
 
 </html>

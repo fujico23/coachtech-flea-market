@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 //https通信では以下有効
-use Illuminate\Support\Facades\URL;
+//use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         //https通信では以下有効
-        URL::forceScheme('https');
+        //URL::forceScheme('https');
 
         //どのページでもログインしているユーザーのrole_idを参照する
         View::composer('*', function ($view) {
