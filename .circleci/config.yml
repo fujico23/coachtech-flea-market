@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  browser-tools: circleci/browser-tools@1.4.8
+  browser-tools: circleci/browser-tools@1.1
 jobs:
   build:
     docker:
@@ -15,9 +15,17 @@ jobs:
           name: 'Prepare Environment'
           command: |
             sudo apt update
-            sudo docker-php-ext-install zip
+            sudo apt-get install -y php-zip
 
       - run:
           name: 'Create Environment file'
           command: |
             mv .env.testing .env
+
+      - run:
+          name: 'Install Dependencies'
+          command: composer install -n --prefer-dist
+
+      - run:
+          name: 'Run Tests'
+          command: ./vendor/bin/phpunit tests
