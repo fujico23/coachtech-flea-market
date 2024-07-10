@@ -18,13 +18,9 @@ jobs:
             sudo apt-get install -y php-zip
 
       - run:
-          name: 'Navigate to src directory'
-          command: cd ~/src
-
-      - run:
           name: 'Create Environment file'
           command: |
-            mv .env.testing .env
+            mv ~/coachtech-flea-market-app/src/.env.testing ~/coachtech-flea-market-app/src/.env
 
       - run:
           name: 'Install Dependencies'
