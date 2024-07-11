@@ -6,21 +6,21 @@ jobs:
   build:
     docker:
       - image: cimg/php:8.1-browsers # The primary container where steps are run
-      - image: cimg/mysql:8.0
+      - image: mysql:8.0.26
+        command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: demo_test
-      DB_CONNECTION: mysql
-      DB_HOST: '%'
-      DB_PORT: 3306
-      DB_DATABASE: test_database
-      DB_USERNAME: root
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+      #DB_CONNECTION: mysql
+      #DB_HOST: '%'
+      #DB_PORT: 3306
+      #DB_DATABASE: test_database
+      #DB_USERNAME: root
+      #MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
     working_directory: ~/ci-demo
 
     steps:
       - checkout
-      - run: ls
       - run:
           name: Wait for MySQL to be ready
           command: |
@@ -42,11 +42,6 @@ jobs:
       - run:
           name: Install PHP libraries
           command: composer install -n --prefer-dist --working-dir=./src
-      - run:
-          command: mysql --version
-      - run:
-          name: Create Database
-          command: mysql -u root -proot -e 'CREATE DATABASE test_database;'
       - run:
           name: Run Migrations
           command: php ./src/artisan migrate --env=testing --force
