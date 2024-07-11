@@ -22,7 +22,7 @@ jobs:
       - checkout
       - run:
           name: Move to src directory
-          command: cd ~/ci-demo/flea-market/src
+          command: cd ~/ci-demo/coachtech-flea-market/src
       - run:
           name: Wait for MySQL to be ready
           command: |
