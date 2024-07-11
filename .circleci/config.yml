@@ -21,6 +21,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Move to src directory
+          command: cd src
+      - run:
           name: Wait for MySQL to be ready
           command: |
             for i in `seq 1 30`; do
