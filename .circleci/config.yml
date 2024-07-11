@@ -5,7 +5,7 @@ jobs:
   build:
     docker:
       - image: cimg/php:7.4.14-browsers
-      - image: cimg/mysql:8.0.26
+      - image: cimg/mysql
 
     environment:
       - DB_CONNECTION: demo_test
