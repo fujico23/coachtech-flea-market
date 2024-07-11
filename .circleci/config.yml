@@ -7,18 +7,14 @@ jobs:
     docker:
       - image: cimg/php:8.1-browsers # The primary container where steps are run
         environment:
-
-      - image: mysql:8.0.26
+      - image: cimg/mysql:8.0.26
         command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-      MYSQL_DATABASE: demo_test
-      MYSQL_RANDOM_ROOT_PASSWORD:
-      MYSQL_HOST: 127.0.0.1
-      MYSQL_ROOT_PASSWORD: ''
-      MYSQL_USERNAME: root
-      MYSQL_PASSWORD: root
-      MYSQL_ROOT_HOST: '%'
+      - APP_DEBUG: true
+      - APP_ENV: testing
+      - APP_KEY: base64:UdiSS/AgMKN0J0a//YjvyMWg5IhC1VvbEYfh+G4Rb1Q=
+      - DB_CONNECTION: mysql
+      - MYSQL_ALLOW_EMPTY_PASSWORD: true
 
     working_directory: ~/ci-demo
 
@@ -43,8 +39,19 @@ jobs:
           name: Docker php extensions install
           command: sudo docker-php-ext-install pdo_mysql
       - run:
+          name: Wait for DB
+          command: dockerize -wait tcp://127.0.0.1:3306 -timeout 3m
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "backend.src/composer.json" }}
+            - v1-dependencies-
+      - run:
           name: Install PHP libraries
           command: composer install -n --prefer-dist --working-dir=./src
+      - save_cache:
+          paths:
+            - ./vendor
+          key: v1-dependencies-{{ checksum "backend.src/composer.json" }}
       - run:
           name: Run Migrations
           command: php ./src/artisan migrate --env=testing --force
