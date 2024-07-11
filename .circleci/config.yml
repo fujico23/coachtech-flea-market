@@ -30,11 +30,14 @@ jobs:
             done
             echo Failed waiting for MySQL && exit 1
       - run:
+          name: Update apt-get
+          command: sudo apt-get update
+      - run:
           name: Install dependencies
-          command: sudo apt-get update && sudo apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev
+          command: sudo apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev
       - run:
           name: Docker php extensions install
-          command: docker-php-ext-install pdo_mysql
+          command: sudo docker-php-ext-install pdo_mysql
       - run:
           name: Install PHP libraries
           command: composer install -n --prefer-dist
