@@ -20,7 +20,6 @@ jobs:
       - run:
           name: Docker php extensions install
           command: sudo docker-php-ext-install pdo_mysql
-      - php/install-packages # PHP Orbからinstall-packagesコマンドを使用
       - run:
           name: Install PHP libraries
           command: composer install -n --prefer-dist
@@ -31,4 +30,4 @@ workflows:
   version: 2.1
   install:
     jobs:
-      - php/install_composer_packages # PHP Orbからinstall_composer_packagesジョブを使用
+      - php/install_composer_packages
