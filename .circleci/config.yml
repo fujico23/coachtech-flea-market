@@ -26,3 +26,8 @@ jobs:
       - run:
           name: Run PHPUnit
           command: vendor/bin/phpunit
+workflows:
+  version: 2.1
+  install:
+    jobs:
+      - install_composer_packages
