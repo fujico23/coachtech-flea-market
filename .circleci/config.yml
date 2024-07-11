@@ -1,33 +1,52 @@
 version: 2.1
 orbs:
-  php: circleci/php@1.1.0 # PHP Orbを追加
   browser-tools: circleci/browser-tools@1.2.3
+
 jobs:
   build:
     docker:
       - image: cimg/php:8.1-browsers # The primary container where steps are run
       - image: cimg/mysql:8.0
     environment:
-      - DB_CONNECTION: mysql_test
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: demo_test
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: test_database
+      DB_USERNAME: root
+      DB_PASSWORD: root
     working_directory: ~/ci-demo
 
     steps:
       - checkout
       - run:
-          # Our primary container isn't MYSQL so run a sleep command until it's ready.
-          name: Update apt-get
-          command: sudo apt-get update
+          name: Wait for MySQL to be ready
+          command: |
+            for i in `seq 1 30`; do
+              nc -z localhost 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
       - run:
-          name: Docker php extensions install
-          command: sudo docker-php-ext-install pdo_mysql
+          name: Install PHP extensions
+          command: sudo apt-get install -y php-mysql
       - run:
           name: Install PHP libraries
           command: composer install -n --prefer-dist
       - run:
+          name: Create Database
+          command: mysql -u root -proot -e 'CREATE DATABASE test_database;'
+      - run:
+          name: Run Migrations
+          command: php artisan migrate --env=testing --force
+      - run:
           name: Run PHPUnit
-          command: vendor/bin/phpunit
+          command: vendor/bin/phpunit --configuration phpunit.xml
+
 workflows:
   version: 2.1
   install:
     jobs:
-      - php/install_composer_packages
+      - build
