@@ -5,14 +5,17 @@ jobs:
   build:
     docker:
       - image: cimg/php:7.4.26-browsers
-      - image: cimg/mysql:8.0
-        environment:
-          MYSQL_ROOT_PASSWORD: root
-
+      - image: cimg/cimg/mysql:8.0
     environment:
-      - DB_CONNECTION: demo_test
+      - DB_CONNECTION: mysql_test
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_DATABASE: demo_test
+          MYSQL_HOST: mysql
+          MYSQL_USER: root
+          MYSQL_PASSWORD: root
 
-    working_directory: ~/coachtech-flea-market-app/src
+    working_directory: ~/ci-demo
 
     steps:
       - browser-tools/install-browser-tools
@@ -24,19 +27,9 @@ jobs:
             sudo apt update
             sudo apt-get install -y php-zip
 
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "composer.json" }}
-            - v1-dependencies-
-
       - run:
           name: 'Install Dependencies'
           command: composer install -n --prefer-dist
-
-      - save_cache:
-          paths:
-            - ./vendor
-          key: v1-dependencies-{{ checksum "composer.json" }}
 
       - run:
           name: 'Run Tests'
