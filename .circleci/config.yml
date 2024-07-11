@@ -18,49 +18,62 @@ jobs:
 
     working_directory: ~/ci-demo
 
+commands:
+  install-dockerize:
     steps:
-      - checkout
       - run:
-          name: Wait for MySQL to be ready
-          command: |
-            for i in `seq 1 30`; do
-              nc -z localhost 3306 && echo Success && exit 0
-              echo -n .
-              sleep 1
-            done
-            echo Failed waiting for MySQL && exit 1
+          name: Install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.6.1
+  install-php-extensions:
+    steps:
       - run:
-          name: Update apt-get
-          command: sudo apt-get update
-      - run:
-          name: Install dependencies
-          command: sudo apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev
-      - run:
-          name: Docker php extensions install
+          name: Install PHP Exetensions
           command: sudo docker-php-ext-install pdo_mysql
-      - run:
-          name: Wait for DB
-          command: dockerize -wait tcp://127.0.0.1:3306 -timeout 3m
+          working_directory: src
+  restore-cache-composer:
+    steps:
       - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "backend.src/composer.json" }}
-            - v1-dependencies-
+          key: v1-dependencies-{{ checksum "src/composer.json" }}
+  install-composer:
+    steps:
       - run:
-          name: Install PHP libraries
-          command: composer install -n --prefer-dist --working-dir=./src
+          name: Install Composer
+          command: composer install -n --prefer-dist
+          working_directory: src
+  save-cache-composer:
+    steps:
       - save_cache:
+          key: v1-dependencies-{{ checksum "src/composer.json" }}
           paths:
-            - ./vendor
-          key: v1-dependencies-{{ checksum "backend.src/composer.json" }}
+            - vendor
+  migration-seeding:
+    steps:
       - run:
-          name: Run Migrations
-          command: php ./src/artisan migrate --env=testing --force
-      - run:
-          name: Run seeders
-          command: php ./src/artisan db:seed --env=testing --force
+          name: Migration & Seeding
+          command: php artisan migrate --seed
+          working_directory: src
+  test-unittest:
+    steps:
       - run:
           name: Run PHPUnit
-          command: .src/vendor/bin/phpunit --configuration=./src/phpunit.xml
+          command: vendor/bin/phpunit
+          working_directory: src
+
+jobs:
+  build:
+    executor:
+      name: laravel-circleci
+    steps:
+      - checkout
+      - install-dockerize
+      - install-php-extensions
+      - restore-cache-composer
+      - install-composer
+      - save-cache-composer
+      - migration-seeding
+      - test-unittest
 
 workflows:
   version: 2.1
