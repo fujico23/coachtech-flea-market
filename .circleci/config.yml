@@ -1,5 +1,6 @@
 version: 2.1
 orbs:
+  php: circleci/php@1.1.0 # PHP Orbを追加
   browser-tools: circleci/browser-tools@1.2.3
 jobs:
   build:
@@ -19,7 +20,7 @@ jobs:
       - run:
           name: Docker php extensions install
           command: sudo docker-php-ext-install pdo_mysql
-      - php/install-packages
+      - php/install-packages # PHP Orbからinstall-packagesコマンドを使用
       - run:
           name: Install PHP libraries
           command: composer install -n --prefer-dist
@@ -30,4 +31,4 @@ workflows:
   version: 2.1
   install:
     jobs:
-      - install_composer_packages
+      - php/install_composer_packages # PHP Orbからinstall_composer_packagesジョブを使用
