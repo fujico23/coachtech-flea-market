@@ -6,11 +6,13 @@ jobs:
     docker:
       - image: cimg/php:7.4.26-browsers
       - image: cimg/mysql:8.0
+        environment:
+          MYSQL_ROOT_PASSWORD: root
 
     environment:
       - DB_CONNECTION: demo_test
 
-    working_directory: ~/ci-demo
+    working_directory: ~/coachtech-flea-market-app/src
 
     steps:
       - browser-tools/install-browser-tools
