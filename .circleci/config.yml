@@ -19,6 +19,7 @@ jobs:
       - run:
           name: Docker php extensions install
           command: sudo docker-php-ext-install pdo_mysql
+      - php/install-packages
       - run:
           name: Install PHP libraries
           command: composer install -n --prefer-dist
