@@ -7,7 +7,7 @@ jobs:
     docker:
       - image: cimg/php:8.1-browsers # The primary container where steps are run
         environment:
-      - image: cimg/mysql:8.0.26
+      - image: circleci/mysql:5.7
         command: --default-authentication-plugin=mysql_native_password
     environment:
       - APP_DEBUG: true
