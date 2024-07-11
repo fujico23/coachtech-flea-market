@@ -11,18 +11,15 @@ jobs:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: demo_test
       DB_CONNECTION: mysql
-      DB_HOST: mysql
+      DB_HOST: '%'
       DB_PORT: 3306
       DB_DATABASE: test_database
       DB_USERNAME: root
-      DB_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
     working_directory: ~/ci-demo
 
     steps:
       - checkout
-      - run:
-          name: Move to src directory
-          command: cd /home/circleci/ci-demo/coachtech-flea-market/src
       - run:
           name: Wait for MySQL to be ready
           command: |
