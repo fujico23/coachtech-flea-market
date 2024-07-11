@@ -6,7 +6,7 @@ jobs:
   build:
     docker:
       - image: cimg/php:8.1-browsers # The primary container where steps are run
-      - image: cimg/mysql:8.0
+      - image: circleci/mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: demo_test
@@ -30,8 +30,11 @@ jobs:
             done
             echo Failed waiting for MySQL && exit 1
       - run:
-          name: Install PHP extensions
-          command: sudo apt-get install -y php-mysql
+          name: Install dependencies
+          command: sudo apt-get update && sudo apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev
+      - run:
+          name: Docker php extensions install
+          command: docker-php-ext-install pdo_mysql
       - run:
           name: Install PHP libraries
           command: composer install -n --prefer-dist
