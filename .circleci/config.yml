@@ -43,14 +43,19 @@ jobs:
           name: Install PHP libraries
           command: composer install -n --prefer-dist --working-dir=./src
       - run:
+          command: mysql --version
+      - run:
           name: Create Database
           command: mysql -u root -proot -e 'CREATE DATABASE test_database;'
       - run:
           name: Run Migrations
-          command: php artisan migrate --env=testing --force
+          command: php ./src/artisan migrate --env=testing --force
+      - run:
+          name: Run seeders
+          command: php ./src/artisan db:seed --env=testing --force
       - run:
           name: Run PHPUnit
-          command: vendor/bin/phpunit --configuration phpunit.xml
+          command: .src/vendor/bin/phpunit --configuration=./src/phpunit.xml
 
 workflows:
   version: 2.1
