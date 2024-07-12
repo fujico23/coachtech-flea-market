@@ -54,7 +54,7 @@ jobs:
           key: v1-dependencies-{{ checksum "src/composer.json" }}
       - run:
           name: Run Migration & Seeding
-          command: php artisan migrate --seed --working-dir=./src
+          command: php ./src/artisan migrate --seed
       #      - run:
       #          name: Run seeders
       #          command: php ./src/artisan db:seed --env=testing --force
