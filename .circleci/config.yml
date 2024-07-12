@@ -6,20 +6,20 @@ jobs:
   build:
     docker:
       - image: cimg/php:8.1-browsers # The primary container where steps are run
-        environment:
+        #environment:
       - image: circleci/mysql:5.7
         command: --default-authentication-plugin=mysql_native_password
-    environment:
-      - APP_DEBUG: true
-      - APP_ENV: testing
-      - APP_KEY: base64:UdiSS/AgMKN0J0a//YjvyMWg5IhC1VvbEYfh+G4Rb1Q=
-      - DB_CONNECTION: mysql_test
-      - DB_HOST: 127.0.0.1
-      - DB_PORT: 3306
-      - DB_DATABASE: demo_test
-      - DB_USERNAME: root
-      - DB_PASSWORD: root
-      - MYSQL_ALLOW_EMPTY_PASSWORD: true
+        environment:
+          - APP_DEBUG: true
+          - APP_ENV: testing
+          - APP_KEY: base64:UdiSS/AgMKN0J0a//YjvyMWg5IhC1VvbEYfh+G4Rb1Q=
+          - DB_CONNECTION: mysql_test
+          - DB_HOST: 127.0.0.1
+          - DB_PORT: 3306
+          - DB_DATABASE: demo_test
+          - DB_USERNAME: root
+          - DB_PASSWORD: root
+          - MYSQL_ALLOW_EMPTY_PASSWORD: true
 
     working_directory: ~/ci-demo
 
@@ -44,7 +44,7 @@ jobs:
           name: Docker php extensions install
           command: |
           sudo docker-php-ext-install pdo_mysql
-      -   sudo docker-php-ext-enable pdo_mysql
+          sudo docker-php-ext-enable pdo_mysql
       - run:
           name: Wait for DB
           command: dockerize -wait tcp://127.0.0.1:3306 -timeout 3m
@@ -61,7 +61,7 @@ jobs:
           key: v1-dependencies-{{ checksum "src/composer.json" }}
       - run:
           name: Run Migration & Seeding
-          command: php ./src/artisan migrate --seed
+          command: php ./src/artisan migrate --seed --env=testing --force
       #      - run:
       #          name: Run seeders
       #          command: php ./src/artisan db:seed --env=testing --force
