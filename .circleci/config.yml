@@ -42,9 +42,10 @@ jobs:
           command: sudo apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev
       - run:
           name: Docker php extensions install
-          command: |
-          sudo docker-php-ext-install pdo_mysql
-          sudo docker-php-ext-enable pdo_mysql
+          command: sudo docker-php-ext-install pdo_mysql
+      - run:
+          name: Docker php extensions enable
+          command: sudo docker-php-ext-enable pdo_mysql
       - run:
           name: Wait for DB
           command: dockerize -wait tcp://127.0.0.1:3306 -timeout 3m
