@@ -30,15 +30,15 @@ jobs:
 
     steps:
       - checkout
-      - run:
-          name: Wait for MySQL to be ready
-          command: |
-            for i in `seq 1 30`; do
-              nc -z mysql 3306 && echo Success && exit 0
-              echo -n .
-              sleep 1
-            done
-            echo Failed waiting for MySQL && exit 1
+      #- run:
+      #    name: Wait for MySQL to be ready
+      #    command: |
+      #      for i in `seq 1 30`; do
+      #        nc -z mysql 3306 && echo Success && exit 0
+      #        echo -n .
+      #        sleep 1
+      #      done
+      #      echo Failed waiting for MySQL && exit 1
       - run:
           name: MV .env.testing to .env
           command: mv .env.testing .env
