@@ -69,6 +69,3 @@ jobs:
       - save-cache-composer
       - migration-seeding
       - test-unittest
-
-workflows:
-  version: 2
