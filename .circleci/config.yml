@@ -1,83 +1,84 @@
 version: 2.1
-orbs:
-  browser-tools: circleci/browser-tools@1.2.3
+
+executors:
+  laravel-circleci:
+    docker:
+      - image: circleci/php:7.4-node-browsers
+      - image: circleci/mysql:5.7
+    environment:
+      - APP_DEBUG: true
+      - APP_ENV: testing
+      - APP_KEY: base64:UdiSS/AgMKN0J0a//YjvyMWg5IhC1VvbEYfh+G4Rb1Q=
+      - DB_CONNECTION: mysql_test
+      - MYSQL_ALLOW_EMPTY_PASSWORD: true
+    working_directory: ~/repo
+
+commands:
+  install-dockerize:
+    steps:
+      - run:
+          name: Install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.6.1
+  install-php-extensions:
+    steps:
+      - run:
+          name: Install PHP Exetensions
+          command: sudo docker-php-ext-install pdo_mysql
+          working_directory: src
+  restore-cache-composer:
+    steps:
+      - restore_cache:
+          key: v1-dependencies-{{ checksum "src/composer.json" }}
+  install-composer:
+    steps:
+      - run:
+          name: Install Composer
+          command: composer install -n --prefer-dist
+          working_directory: src
+  save-cache-composer:
+    steps:
+      - save_cache:
+          key: v1-dependencies-{{ checksum "src/composer.json" }}
+          paths:
+            - vendor
+  migration-seeding:
+    steps:
+      - run:
+          name: Migration & Seeding
+          command: php artisan migrate --seed
+          working_directory: src
+  test-unittest:
+    steps:
+      - run:
+          name: Run PHPUnit
+          command: vendor/bin/phpunit
+          working_directory: src
 
 jobs:
   build:
-    docker:
-      - image: cimg/php:8.1-browsers # The primary container where steps are run
-        environment:
-          - DB_HOST: 127.0.0.1
-          - DB_ENV: testing
-          - MYSQL_DATABASE: laravel_test
-          - MYSQL_USER: root
-          - MYSQL_PASSWORD: root
-      - image: circleci/mysql:5.7
-        command: --default-authentication-plugin=mysql_native_password
-        environment:
-          - APP_DEBUG: true
-          - APP_ENV: testing
-          - APP_KEY: base64:UdiSS/AgMKN0J0a//YjvyMWg5IhC1VvbEYfh+G4Rb1Q=
-          - DB_CONNECTION: mysql_test
-          - DB_HOST: 127.0.0.1
-          - DB_PORT: 3306
-          - DB_DATABASE: demo_test
-          - DB_USERNAME: root
-          - DB_PASSWORD: root
-          - MYSQL_ALLOW_EMPTY_PASSWORD: true
-
-    working_directory: ~/ci-demo
-
+    executor:
+      name: laravel-circleci
     steps:
       - checkout
-      #- run:
-      #    name: Wait for MySQL to be ready
-      #    command: |
-      #      for i in `seq 1 30`; do
-      #        nc -z mysql 3306 && echo Success && exit 0
-      #        echo -n .
-      #        sleep 1
-      #      done
-      #      echo Failed waiting for MySQL && exit 1
-      - run:
-          name: MV .env.testing to .env
-          command: mv .env.testing .env
-          working_directory: src
-      - run:
-          name: Update apt-get
-          command: sudo apt-get update
-      - run:
-          name: Install dependencies
-          command: sudo apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev
-      - run:
-          name: Docker php extensions install
-          command: sudo docker-php-ext-install pdo_mysql
-      - run:
-          name: Docker php extensions enable
-          command: sudo docker-php-ext-enable pdo_mysql
-      - run:
-          name: Wait for DB
-          command: dockerize -wait tcp://127.0.0.1:3306 -timeout 3m
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "src/composer.json" }}
-            - v1-dependencies-
-      - run:
-          name: Install PHP libraries
-          command: composer install -n --prefer-dist --working-dir=./src
-      - save_cache:
-          paths:
-            - ./vendor
-          key: v1-dependencies-{{ checksum "src/composer.json" }}
-      - run:
-          name: Run Migration & Seeding
-          command: php ./src/artisan migrate --seed --env=testing --force
-      - run:
-          name: Run PHPUnit
-          command: .src/vendor/bin/phpunit --configuration=./src/phpunit.xml
+      - install-dockerize
+      - install-php-extensions
+      - restore-cache-composer
+      - install-composer
+      - save-cache-composer
+      - migration-seeding
+      - test-unittest
 
 workflows:
-  version: 2.1
-  install:
+  version: 2
+  build_deploy:
     jobs:
       - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
