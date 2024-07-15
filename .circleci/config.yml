@@ -71,9 +71,13 @@ jobs:
     steps:
       - checkout
       - install-dockerize
+            - run:
+          name: package list update
       - run:
           name: Update
-          command: sudo apt-get update
+          command: |
+            sudo wget -q -O - https://dl.google.com/linux/linux_signing_key.pub
+            sudo apt-key add -
       - run:
           name: MySQL CLI のインストール; ダミー データのインポート; サンプル クエリの実行
           command: |
