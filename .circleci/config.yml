@@ -39,11 +39,17 @@ commands:
           key: v1-dependencies-{{ checksum "src/composer.json" }}
           paths:
             - vendor
-  migration-seeding:
+  migration:
     steps:
       - run:
-          name: Migration & Seeding
-          command: php artisan migrate --seed
+          name: Migration
+          command: php artisan migrate --env=testing
+          working_directory: src
+  seeding:
+    steps:
+      - run:
+          name: Seeding
+          command: php artisan db:seed --env=testing
           working_directory: src
   test-unittest:
     steps:
@@ -63,5 +69,6 @@ jobs:
       - restore-cache-composer
       - install-composer
       - save-cache-composer
-      - migration-seeding
+      - migration
+      - seeding
       - test-unittest
