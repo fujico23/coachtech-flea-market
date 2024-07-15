@@ -9,7 +9,11 @@ executors:
       - APP_DEBUG: true
       - APP_ENV: testing
       - APP_KEY: base64:UdiSS/AgMKN0J0a//YjvyMWg5IhC1VvbEYfh+G4Rb1Q=
-      - DB_CONNECTION: mysql_test
+      - DB_CONNECTION: mysql
+      - DB_HOST: 127.0.0.1
+      - DB_DATABASE: demo_test
+      - DB_USERNAME: root
+      - DB_PASSWORD: ''
       - MYSQL_ALLOW_EMPTY_PASSWORD: true
     working_directory: ~/repo
 
@@ -63,6 +67,9 @@ jobs:
     steps:
       - checkout
       - install-dockerize
+      - run:
+          name: Wait for MySQL
+          command: dockerize -wait tcp://127.0.0.1:3306 -timeout 1m
       - install-php-extensions
       - restore-cache-composer
       - install-composer
