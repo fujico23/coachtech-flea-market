@@ -82,7 +82,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'circle_test' => [
+        'circle_testing' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
             'host' => '127.0.0.1',
