@@ -6,15 +6,19 @@ executors:
       - image: circleci/php:7.4-node-browsers
       - image: circleci/mysql:5.7
     environment:
-      - APP_DEBUG: true
-      - APP_ENV: testing
-      - APP_KEY: base64:UdiSS/AgMKN0J0a//YjvyMWg5IhC1VvbEYfh+G4Rb1Q=
-      - DB_CONNECTION: mysql
-      - DB_HOST: 127.0.0.1
-      - DB_DATABASE: demo_test
-      - DB_USERNAME: root
-      - DB_PASSWORD: ''
-      - MYSQL_ALLOW_EMPTY_PASSWORD: true
+      #- APP_DEBUG: true
+      #- APP_ENV: testing
+      #- APP_KEY: base64:UdiSS/AgMKN0J0a//YjvyMWg5IhC1VvbEYfh+G4Rb1Q=
+      #- DB_CONNECTION: mysql
+      #- DB_HOST: 127.0.0.1
+      #- DB_DATABASE: demo_test
+      #- DB_USERNAME: root
+      #- DB_PASSWORD: ''
+      #- MYSQL_ALLOW_EMPTY_PASSWORD: true
+      - MYSQL_ROOT_PASSWORD: rootpw
+      - MYSQL_DATABASE: test_db
+      - MYSQL_USER: user
+      - MYSQL_PASSWORD: passw0rd
     working_directory: ~/repo
 
 commands:
@@ -68,8 +72,22 @@ jobs:
       - checkout
       - install-dockerize
       - run:
-          name: Wait for MySQL
-          command: dockerize -wait tcp://127.0.0.1:3306 -timeout 1m
+          # プライマリコンテナは MySQL ではないので、準備ができるまでスリープコマンドを実行します。
+          name: MySQL が準備できるまで待機
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z 127.0.0.1 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
+      - run:
+          name: MySQL CLI のインストール; ダミー データのインポート; サンプル クエリの実行
+          command: |
+            sudo apt-get install default-mysql-client
+            mysql -h 127.0.0.1 -u user -ppassw0rd test_db < sql-data/dummy.sql
+            mysql -h 127.0.0.1 -u user -ppassw0rd --execute="SELECT * FROM test_db.Persons"
       - install-php-extensions
       - restore-cache-composer
       - install-composer
