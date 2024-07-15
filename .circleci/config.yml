@@ -72,6 +72,9 @@ jobs:
       - checkout
       - install-dockerize
       - run:
+          name: Update system packages
+          command: sudo apt update
+      - run:
           name: MySQL CLI のインストール; ダミー データのインポート; サンプル クエリの実行
           command: |
             sudo apt-get install default-mysql-client
