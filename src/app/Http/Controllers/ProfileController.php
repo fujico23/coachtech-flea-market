@@ -7,7 +7,7 @@ use App\Http\Requests\ProfileRequest;
 use App\Models\Address;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Imagick;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class ProfileController extends Controller
 {
@@ -25,31 +25,27 @@ class ProfileController extends Controller
 
         // 画像を保存
         if ($request->hasFile('icon_image')) {
-            $file = $request->file('icon_image');
+            $image = $request->file('icon_image');
             $fileName = 'icon_image.jpg';
-            $storagePath = 'public/icon_image/' . $user->id;
 
-            // ディレクトリが存在しない場合は作成
-            //S3では不要
-            if (!Storage::disk('local')->exists($storagePath)) {
-                Storage::disk('local')->makeDirectory($storagePath);
+            // 画像を読み込み、jpg形式に変換
+            $img = Image::make($image)->encode('jpg');
+
+            if (config('app.env') === 'production') {
+                $disk = 's3';
+                $path = 'icon_image/' . $user->id;
+            } else {
+                $disk = 'local';
+                $path = 'public/icon_image/' . $user->id;
             }
 
-            $tempPath = $file->storeAs('temp', $file->getClientOriginalName());
-            $img = new Imagick(storage_path('app/' . $tempPath));
-            $img->setImageFormat('jpg');
+            // 変換された画像を保存
+            Storage::disk($disk)->put($path . '/' . $fileName, (string) $img);
 
-            $storagePathWithFileName = $storagePath . '/' . $fileName;
-            Storage::disk('local')->put($storagePathWithFileName, $img->getImageBlob());
-            // S3本番環境の場合
-            ///Storage::disk('s3')->put($storagePathWithFileName, $img->getImageBlob());
-
-            $image_url = Storage::url($storagePathWithFileName);
-
+            $image_url = Storage::disk($disk)->url($path . '/' . $fileName);
             $profileData['icon_image'] = $image_url;
-
-            Storage::delete($tempPath);
         }
+
         $user->update($profileData);
 
         $addressData = $request->only(['postal_code', 'address', 'building_name', 'type']);

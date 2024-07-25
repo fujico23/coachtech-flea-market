@@ -50,34 +50,19 @@ class SellController extends Controller
         // 画像を保存
         if ($request->hasFile('image_url')) {
             foreach ($request->file('image_url') as $file) {
-                $filename = uniqid() . '.jpg';
-                $storagePath = 'public/items/' . $item->id;
-                //S3本番環境の場合
-                //$storagePath = 'items/' . $item->id . '/' . $filename;
-
-                //S3では不要
-                if (!Storage::disk('local')->exists($storagePath)) {
-                    Storage::disk('local')->makeDirectory($storagePath);
+                $fileName = uniqid() . '.jpg';
+                if (config('app.env') === 'production') {
+                    $path = 'items/' . $item->id . '/' . $fileName;
+                    $disk = 's3';
+                    Storage::disk($disk)->put($path, file_get_contents($file));
+                } else {
+                    $path = 'public/items/' . $item->id . '/' . $fileName;
+                    $disk = 'local';
+                    Storage::disk($disk)->put($path, file_get_contents($file));
                 }
 
-                // 画像をjpgに変換
-                $img = new Imagick($file->getRealPath());
-                $img->setImageFormat('jpg');
-
-                $fullPath = storage_path('app/' . $storagePath . '/' . $filename);
-                // S3本番環境の場合
-                // $fullPath = storage_path('app/temp/' . $filename);
-                $img->writeImage($fullPath);
-
-                //S3本番環境の場合
-                // Storage::disk('s3')->put($storagePath, file_get_contents($fullPath), 'public');
-                //unlink($fullPath);
-
-
-                // 画像のURLを生成
-                $image_url = Storage::url($storagePath . '/' . $filename);
-                // S3本番環境の場合
-                //$image_url = Storage::disk('s3')->url($storagePath);
+                // URLを取得
+                $image_url = Storage::disk($disk)->url($path);
 
                 ItemImage::create([
                     'item_id' => $item->id,
@@ -85,7 +70,6 @@ class SellController extends Controller
                 ]);
             }
         }
-
         return redirect()->back()->with('success', '商品が出品されました!');
     }
 }
